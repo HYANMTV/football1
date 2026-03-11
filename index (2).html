@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard 5.2 – Khảo Sát & Phỏng Vấn 26/3</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --green:#00C853; --green-dim:rgba(0,200,83,0.1);
+  --blue:#2979FF;  --blue-dim:rgba(41,121,255,0.1);
+  --black:#080A0E; --card:#0F1318; --border:rgba(255,255,255,0.07);
+  --text:#EEF0F5;  --muted:#6B7A96;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(0,200,83,0.06) 0%,transparent 65%);}
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.02;
+  background-image:linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px);
+  background-size:60px 60px;}
+
+.wrap{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:44px 22px 80px;}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:44px;}
+.pill-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;padding:6px 14px;border-radius:100px;}
+.pill.g{background:var(--green-dim);border:1px solid rgba(0,200,83,.25);color:var(--green);}
+.pill.b{background:var(--blue-dim);border:1px solid rgba(41,121,255,.25);color:#64B5F6;}
+.header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,60px);letter-spacing:2px;line-height:1;margin-bottom:8px;}
+.header h1 .g{color:var(--green);} .header h1 .b{color:#64B5F6;}
+.header p{color:var(--muted);font-size:13px;line-height:1.7;}
+
+/* SYNC */
+.sync-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 20px;margin-bottom:28px;}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-info{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);}
+.sync-info strong{color:var(--text);}
+.btn-sync{background:var(--green-dim);border:1px solid rgba(0,200,83,.25);color:var(--green);
+  padding:8px 20px;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;}
+.btn-sync:hover{background:rgba(0,200,83,.18);}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:28px;}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;}
+.stat .val{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;margin-bottom:4px;}
+.stat .lbl{font-size:11px;color:var(--muted);letter-spacing:.5px;}
+.cg{color:var(--green);} .cb{color:#64B5F6;} .cy{color:#FFD600;} .cp{color:#FF80AB;}
+
+/* SECTION TITLE */
+.section-title{display:flex;align-items:center;gap:14px;margin:36px 0 18px;}
+.section-title .line{flex:1;height:1px;background:var(--border);}
+.section-title h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;white-space:nowrap;}
+.section-title h2.gs{color:var(--green);} .section-title h2.bi{color:#64B5F6;}
+.section-badge{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  padding:4px 12px;border-radius:100px;}
+.section-badge.s{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,200,83,.2);}
+.section-badge.i{background:var(--blue-dim);color:#64B5F6;border:1px solid rgba(41,121,255,.2);}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:680px){.charts-grid{grid-template-columns:1fr;}}
+.chart-card{border-radius:16px;padding:22px;border:1px solid var(--border);}
+.chart-card.s{background:#0C1610;border-color:rgba(0,200,83,.1);}
+.chart-card.i{background:#0C0F18;border-color:rgba(41,121,255,.1);}
+.chart-card:hover{filter:brightness(1.05);}
+.chart-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+  margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.chart-title.s{color:var(--green);}
+.chart-title.s::before{content:'';width:3px;height:12px;background:var(--green);border-radius:2px;flex-shrink:0;}
+.chart-title.i{color:#64B5F6;}
+.chart-title.i::before{content:'';width:3px;height:12px;background:#64B5F6;border-radius:2px;flex-shrink:0;}
+.chart-wrap{position:relative;height:210px;}
+
+/* TABLES */
+.table-card{border-radius:16px;overflow:hidden;margin-bottom:20px;}
+.table-card.s{border:1px solid rgba(0,200,83,.1);background:#0C1610;}
+.table-card.i{border:1px solid rgba(41,121,255,.1);background:#0C0F18;}
+.table-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.btn-export{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  padding:7px 16px;border-radius:100px;border:none;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.btn-export.s{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,200,83,.2);}
+.btn-export.i{background:var(--blue-dim);color:#64B5F6;border:1px solid rgba(41,121,255,.2);}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{padding:11px 14px;text-align:left;color:var(--muted);font-size:10px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text);vertical-align:middle;}
+tbody tr:hover{background:rgba(255,255,255,.015);}
+tbody tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700;}
+.badge-g{background:rgba(0,200,83,.15);color:var(--green);}
+.badge-b{background:rgba(41,121,255,.15);color:#64B5F6;}
+.badge-y{background:rgba(255,214,0,.15);color:#FFD600;}
+.badge-p{background:rgba(255,128,171,.15);color:#FF80AB;}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="pill-row">
+      <div class="pill g">📋 Khảo sát định lượng</div>
+      <div class="pill b">🎤 Phỏng vấn định tính</div>
+    </div>
+    <h1>DASHBOARD <span class="g">5.2</span><br>TỔNG HỢP DỮ LIỆU <span class="b">26/3</span></h1>
+    <p>Lớp DHOT19A · Môn Kỹ Năng Làm Việc Nhóm · Tự động đồng bộ từ Google Sheets</p>
+  </div>
+
+  <!-- SYNC -->
+  <div class="sync-bar">
+    <div class="sync-info"><div class="sync-dot"></div>Cập nhật lúc: <strong id="lastSync">--</strong></div>
+    <button class="btn-sync" onclick="loadData()">↻ Tải dữ liệu mới</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat"><div class="val cg" id="st-total">0</div><div class="lbl">Tổng phản hồi</div></div>
+    <div class="stat"><div class="val cb" id="st-player">0</div><div class="lbl">Muốn thi đấu</div></div>
+    <div class="stat"><div class="val cy" id="st-contrib">0%</div><div class="lbl">Sẵn đóng góp</div></div>
+    <div class="stat"><div class="val cp" id="st-interest">0%</div><div class="lbl">Rất quan tâm</div></div>
+  </div>
+
+  <!-- ══════ KHẢO SÁT ══════ -->
+  <div class="section-title">
+    <div class="line"></div>
+    <span class="section-badge s">📋 Khảo Sát</span>
+    <h2 class="gs">PHÂN TÍCH ĐỊNH LƯỢNG</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card s"><div class="chart-title s">Mức độ quan tâm</div><div class="chart-wrap"><canvas id="c-interest"></canvas></div></div>
+    <div class="chart-card s"><div class="chart-title s">Vai trò tham gia</div><div class="chart-wrap"><canvas id="c-role"></canvas></div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card s"><div class="chart-title s">Thời gian tổ chức</div><div class="chart-wrap"><canvas id="c-time"></canvas></div></div>
+    <div class="chart-card s"><div class="chart-title s">Thời lượng trận</div><div class="chart-wrap"><canvas id="c-duration"></canvas></div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card s"><div class="chart-title s">Hình thức thi đấu</div><div class="chart-wrap"><canvas id="c-format"></canvas></div></div>
+    <div class="chart-card s"><div class="chart-title s">Mức đóng góp</div><div class="chart-wrap"><canvas id="c-amount"></canvas></div></div>
+  </div>
+
+  <!-- Survey Table -->
+  <div class="table-card s">
+    <div class="table-header">
+      <div class="chart-title s" style="margin:0">Danh sách Khảo Sát chi tiết</div>
+      <button class="btn-export s" onclick="exportCSV('survey')">⬇ Xuất CSV Khảo Sát</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Họ tên</th><th>Quan tâm</th><th>Vai trò</th>
+          <th>Vị trí</th><th>Giờ tổ chức</th><th>Thời lượng</th><th>Hình thức</th><th>Đóng góp</th><th>Mức đóng</th>
+        </tr></thead>
+        <tbody id="tbody-survey"><tr><td colspan="10"><div class="empty">Nhấn "Tải dữ liệu mới" để xem kết quả</div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════ PHỎNG VẤN ══════ -->
+  <div class="section-title">
+    <div class="line"></div>
+    <span class="section-badge i">🎤 Phỏng Vấn</span>
+    <h2 class="bi">PHÂN TÍCH ĐỊNH TÍNH</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card i"><div class="chart-title i">Lý do tham gia</div><div class="chart-wrap"><canvas id="c-pv1"></canvas></div></div>
+    <div class="chart-card i"><div class="chart-title i">Địa điểm & Thời gian</div><div class="chart-wrap"><canvas id="c-pv2"></canvas></div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card i"><div class="chart-title i">Hình thức ưa thích (PV)</div><div class="chart-wrap"><canvas id="c-pv3"></canvas></div></div>
+    <div class="chart-card i"><div class="chart-title i">Kỳ vọng giải thưởng (PV)</div><div class="chart-wrap"><canvas id="c-pv4"></canvas></div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card i"><div class="chart-title i">Vai trò mong muốn (PV)</div><div class="chart-wrap"><canvas id="c-pv5"></canvas></div></div>
+    <div class="chart-card i"><div class="chart-title i">Đề xuất tổ chức (PV)</div><div class="chart-wrap"><canvas id="c-pv6"></canvas></div></div>
+  </div>
+
+  <!-- Interview Table -->
+  <div class="table-card i">
+    <div class="table-header">
+      <div class="chart-title i" style="margin:0">Danh sách Phỏng Vấn chi tiết</div>
+      <button class="btn-export i" onclick="exportCSV('interview')">⬇ Xuất CSV Phỏng Vấn</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Họ tên</th><th>Lý do tham gia</th><th>Địa điểm</th>
+          <th>Hình thức</th><th>Giải thưởng</th><th>Vai trò</th><th>Đề xuất</th>
+        </tr></thead>
+        <tbody id="tbody-interview"><tr><td colspan="8"><div class="empty">Nhấn "Tải dữ liệu mới" để xem kết quả</div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SHEET_ID = '1zPb6dY9IerlxCYziH7IKyQ3wJei7ehF5GPL8p-PxkRE';
+const GREENS = ['#00C853','#69F0AE','#1B5E20','#00E676','#76FF03','#CCFF90'];
+const BLUES  = ['#2979FF','#64B5F6','#0D47A1','#40C4FF','#82B1FF','#B3E5FC'];
+const charts = {};
+let surveyData = [], interviewData = [];
+
+function cnt(arr, col) {
+  const m={};
+  arr.forEach(r=>{ const v=(r[col]||'').trim(); if(v) m[v]=(m[v]||0)+1; });
+  return m;
+}
+
+function makeChart(id, type, data, colors, label) {
+  const labels=Object.keys(data), vals=Object.values(data);
+  if(charts[id]) charts[id].destroy();
+  const isDo = type==='doughnut';
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
+    type,
+    data:{
+      labels,
+      datasets:[{
+        label,data:vals,
+        backgroundColor:colors.slice(0,labels.length).map(c=>c+(isDo?'CC':'88')),
+        borderColor:colors.slice(0,labels.length),
+        borderWidth:isDo?2:1.5,
+        borderRadius:isDo?0:6,
+        hoverOffset:isDo?6:0,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:isDo,position:'bottom',labels:{color:'#6B7A96',font:{family:'DM Sans',size:10},boxWidth:9,padding:12}},
+        tooltip:{backgroundColor:'#161B24',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,
+          titleColor:'#EEF0F5',bodyColor:'#6B7A96',
+          callbacks:{label:ctx=>` ${ctx.parsed.y??ctx.parsed} người`}}
+      },
+      scales:isDo?{}:{
+        x:{ticks:{color:'#6B7A96',font:{family:'DM Sans',size:10},maxRotation:25},grid:{color:'rgba(255,255,255,0.03)'}},
+        y:{ticks:{color:'#6B7A96',font:{family:'DM Sans',size:10},stepSize:1},grid:{color:'rgba(255,255,255,0.03)'},beginAtZero:true}
+      }
+    }
+  });
+}
+
+async function loadData() {
+  document.querySelector('.btn-sync').textContent='↻ Đang tải...';
+  try {
+    const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`);
+    const csv = await res.text();
+    const rows = parseCSV(csv).slice(1).filter(r=>r[1]);
+
+    // Separate: rows with pv fields = combined, others = survey only
+    surveyData = rows;
+    interviewData = rows.filter(r => r[10] || r[11] || r[12]);
+
+    renderStats(rows);
+    renderSurveyCharts(rows);
+    renderInterviewCharts(interviewData);
+    renderSurveyTable(rows);
+    renderInterviewTable(interviewData);
+    document.getElementById('lastSync').textContent = new Date().toLocaleTimeString('vi-VN');
+  } catch(e) {
+    // Demo
+    surveyData = getDemoSurvey();
+    interviewData = getDemoInterview();
+    renderStats(surveyData);
+    renderSurveyCharts(surveyData);
+    renderInterviewCharts(interviewData);
+    renderSurveyTable(surveyData);
+    renderInterviewTable(interviewData);
+    document.getElementById('lastSync').textContent='Demo data';
+  }
+  document.querySelector('.btn-sync').textContent='↻ Tải dữ liệu mới';
+}
+
+function parseCSV(text) {
+  return text.trim().split('\n').map(line=>{
+    const r=[]; let c='',q=false;
+    for(const ch of line){
+      if(ch==='"') q=!q;
+      else if(ch===','&&!q){r.push(c.trim());c='';}
+      else c+=ch;
+    }
+    r.push(c.trim()); return r;
+  });
+}
+
+function renderStats(data) {
+  document.getElementById('st-total').textContent = data.length;
+  document.getElementById('st-player').textContent = data.filter(r=>(r[3]||'').includes('Cầu thủ')||(r[3]||'').includes('thi đấu')).length;
+  const contrib = data.filter(r=>(r[9]||'').includes('Có')||(r[8]||'').includes('Có')).length;
+  document.getElementById('st-contrib').textContent = data.length ? Math.round(contrib/data.length*100)+'%' : '0%';
+  const interest = data.filter(r=>(r[2]||'').includes('Rất')).length;
+  document.getElementById('st-interest').textContent = data.length ? Math.round(interest/data.length*100)+'%' : '0%';
+}
+
+function renderSurveyCharts(data) {
+  makeChart('c-interest','doughnut',cnt(data,2),GREENS,'Quan tâm');
+  makeChart('c-role','bar',cnt(data,3),GREENS,'Vai trò');
+  makeChart('c-time','bar',cnt(data,5),GREENS,'Thời gian');
+  makeChart('c-duration','bar',cnt(data,6),GREENS,'Thời lượng');
+  makeChart('c-format','doughnut',cnt(data,7),GREENS,'Hình thức');
+  makeChart('c-amount','bar',cnt(data,9),GREENS,'Mức đóng');
+}
+
+function renderInterviewCharts(data) {
+  makeChart('c-pv1','doughnut',cnt(data,10),BLUES,'Lý do');
+  makeChart('c-pv2','bar',cnt(data,11),BLUES,'Địa điểm');
+  makeChart('c-pv3','bar',cnt(data,12),BLUES,'Hình thức PV');
+  makeChart('c-pv4','doughnut',cnt(data,13),BLUES,'Giải thưởng');
+  makeChart('c-pv5','bar',cnt(data,14),BLUES,'Vai trò PV');
+  makeChart('c-pv6','doughnut',cnt(data,15),BLUES,'Đề xuất');
+}
+
+function renderSurveyTable(data) {
+  const el = document.getElementById('tbody-survey');
+  if(!data.length){el.innerHTML=`<tr><td colspan="10"><div class="empty">Chưa có dữ liệu khảo sát</div></td></tr>`;return;}
+  el.innerHTML = data.map((r,i)=>`
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><strong>${r[1]||''}</strong></td>
+      <td><span class="badge ${(r[2]||'').includes('Rất')?'badge-g':'badge-y'}">${r[2]||'–'}</span></td>
+      <td>${r[3]||'–'}</td><td>${r[4]||'–'}</td><td>${r[5]||'–'}</td>
+      <td>${r[6]||'–'}</td><td>${r[7]||'–'}</td>
+      <td><span class="badge ${(r[8]||'').includes('Có')?'badge-g':'badge-p'}">${r[8]||'–'}</span></td>
+      <td>${r[9]||'–'}</td>
+    </tr>`).join('');
+}
+
+function renderInterviewTable(data) {
+  const el = document.getElementById('tbody-interview');
+  if(!data.length){el.innerHTML=`<tr><td colspan="8"><div class="empty">Chưa có dữ liệu phỏng vấn</div></td></tr>`;return;}
+  el.innerHTML = data.map((r,i)=>`
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><strong>${r[1]||''}</strong></td>
+      <td>${r[10]||'–'}</td><td>${r[11]||'–'}</td>
+      <td>${r[12]||'–'}</td><td>${r[13]||'–'}</td>
+      <td>${r[14]||'–'}</td><td>${r[15]||'–'}</td>
+    </tr>`).join('');
+}
+
+function exportCSV(type) {
+  const data = type==='survey' ? surveyData : interviewData;
+  if(!data.length) return alert('Chưa có dữ liệu!');
+  const headers = type==='survey'
+    ? ['STT','Họ tên','Quan tâm','Vai trò','Vị trí','Giờ tổ chức','Thời lượng','Hình thức','Đóng góp','Mức đóng']
+    : ['STT','Họ tên','Lý do tham gia','Địa điểm','Hình thức','Giải thưởng','Vai trò','Đề xuất'];
+  const cols = type==='survey' ? [1,2,3,4,5,6,7,8,9] : [1,10,11,12,13,14,15];
+  const rows = data.map((r,i)=>[i+1,...cols.map(c=>r[c]||'')].join(','));
+  const csv = [headers.join(','),...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${type}_bongda_26_3.csv`;
+  a.click();
+}
+
+function getDemoSurvey(){
+  return [
+    ['',"Nguyễn Văn A","Rất quan tâm 🔥","⚽ Cầu thủ thi đấu","🔴 Tiền đạo","🌅 Buổi sáng","⏱ 30 phút","🏟️ Vòng bảng + loại trực tiếp","✅ Có","50.000đ"],
+    ['',"Trần Thị B","Quan tâm","📣 Cổ động viên","🟡 Tiền vệ","☀️ Buổi chiều","⏱ 20 phút","⚡ Đấu loại trực tiếp","✅ Có","30.000đ"],
+    ['',"Lê Hoàng C","Rất quan tâm 🔥","⚽ Cầu thủ thi đấu","🔵 Hậu vệ","🌅 Buổi sáng","⏱ 30 phút","🔄 Đấu vòng tròn","❌ Không","20.000đ"],
+    ['',"Phạm Thị D","Bình thường","📣 Cổ động viên","🟢 Thủ môn","🌙 Buổi tối","⏱ 40 phút","🏟️ Vòng bảng + loại trực tiếp","✅ Có","100.000đ"],
+    ['',"Hoàng Văn E","Rất quan tâm 🔥","⚽ Cầu thủ thi đấu","🔴 Tiền đạo","☀️ Buổi chiều","⏱ 30 phút","⚡ Đấu loại trực tiếp","✅ Có","50.000đ"],
+  ];
+}
+function getDemoInterview(){
+  return [
+    ['',"Nguyễn Văn A","","","","","","","","","✅ Có – Đam mê thể thao","🌅 Sáng sớm tại sân trường","🏟️ Vòng bảng + loại trực tiếp","💵 50.000đ – Tiền mặt + Cúp","⚽ Cầu thủ thi đấu chính thức","📸 Có người chụp ảnh kỷ niệm"],
+    ['',"Trần Thị B","","","","","","","","","🤔 Tuỳ – Phụ thuộc lịch học","☀️ Chiều tại sân trường","⚡ Loại trực tiếp – căng thẳng","💵 30.000đ – Thêm quà tặng nhỏ","📣 Cổ động viên cháy hết mình","🎵 Có MC + âm thanh sôi động"],
+    ['',"Lê Hoàng C","","","","","","","","","✅ Có – Muốn giao lưu với lớp","🌙 Tối cuối tuần sân thuê ngoài","🔄 Vòng tròn – công bằng hơn","💵 50.000đ – Tiền mặt + Cúp","⚽ Cầu thủ thi đấu chính thức","👕 Có đồng phục đội"],
+  ];
+}
+
+loadData();
+</script>
+</body>
+</html>
